@@ -1,0 +1,34 @@
+name: KeyHunt Automation
+
+on:
+  workflow_dispatch:  # Manual Start
+  schedule:
+    - cron: "50 */6 * * *"  # Runs every 5 hours 50 minutes
+
+jobs:
+  run-keyhunt:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Install Dependencies
+        run: |
+          git clone https://github.com/Ramavatar98/keyhunt-.git
+          cd keyhunt-
+          make
+          git clone https://github.com/Ramavatar98/keysubtrac.git
+          cd keysubtrac
+          make
+          ./keysubtracter -p 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 -n 100000 -b 136 -R -f address > 1.txt
+
+      - name: Run KeyHunt for 5 Hours 50 Minutes
+        run: |
+          cd keyhunt-
+          timeout 20 ./keyhunt -m address -f keysubtrac/1.txt -r 1:ffffffffffffffffffff -l compress -q -s 10 | tee ../keyhunt_output.log
+      - name: cat file
+        run: |
+          cd keyhunt-
+          cat KEYFOUNDKEYFOUND.txt
+          cd keysubtrac
+          cat 1.txt
