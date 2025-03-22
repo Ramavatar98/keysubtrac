@@ -25,11 +25,11 @@ jobs:
       - name: Run KeyHunt for 5 Hours 50 Minutes
         run: |
           cd keyhunt-
-          timeout 60 ./keyhunt -m address -f keysubtrac/1.txt -r 1:ffffffffffffffffffff -l compress -q -s 10 | tee ../keyhunt_output.log
+          timeout 120 ./keyhunt -m address -f keysubtrac/1.txt -r 1:ffffffffffffffffffff -l compress -q -s 10 | tee ../keyhunt_output.log
       - name: cat file
         run: |
           cd keyhunt-
-          cat KEYFOUNDKEYFOUND.txt
+          cat KEYFOUNDKEYFOUND.txt  || echo "No key found"
       - name: cat file 
         run: |
           cd keyhunt-
