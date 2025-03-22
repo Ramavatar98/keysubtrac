@@ -212,7 +212,7 @@ int main(int argc, char **argv)  {
 							fprintf(OUTPUT,"%s\n",str_address);
 						}
 						else	{
-							gmp_fprintf(OUTPUT,"%s # + %Zd\n",str_address,base_key);
+							gmp_fprintf(OUTPUT,"%s\n # + %Zd\n",str_address,base_key);
 						}
 					break;
 				}
