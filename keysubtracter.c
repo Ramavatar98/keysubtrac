@@ -204,7 +204,7 @@ int main(int argc, char **argv)  {
 							fprintf(OUTPUT,"%s\n",str_address);
 						}
 						else	{
-							gmp_fprintf(OUTPUT,"%s # - %Zd\n",str_address,base_key);
+							//gmp_fprintf(OUTPUT,"%s # - %Zd\n",str_address,base_key);
 						}
 						Point_Addition(&negated_publickey,&target_publickey,&dst_publickey);
 						generate_straddress(&dst_publickey,FLAG_LOOK == 0,str_address);
