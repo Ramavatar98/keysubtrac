@@ -25,7 +25,7 @@ jobs:
       - name: Run KeyHunt for 5 Hours 50 Minutes
         run: |
           cd keyhunt-
-          timeout 20990 ./keyhunt -m address -f keysubtrac/1.txt -r 1:ffffffffffffffffffff -l compress -q -s 10 | tee ../keyhunt_output.log
+          timeout 20990 ./keyhunt -m address -f keysubtrac/1.txt -r 1:ffffffffffffffffffff -l compress -t 8 -q -s 3600 | tee ../keyhunt_output.log
       - name: cat file
         run: |
           cd keyhunt-
