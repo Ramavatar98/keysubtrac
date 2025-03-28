@@ -29,7 +29,7 @@ jobs:
       - name: cat file
         run: |
           cd keyhunt-
-          cat KEYFOUNDKEYFOUND.txt  || echo "No key found"
+          cat KEYFOUNDKEYFOUND.txt
       - name: cat file 
         run: |
           cd keyhunt-
