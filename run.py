@@ -2,7 +2,7 @@ import subprocess
 import time
 import re
 
-command = ["./keysubtracter", "-p", "02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16", "-n", "87112285931760246646623899502532662132736", "-b", "136", "-R"]
+command = ["./keysubtracter", "-p", "02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16", "-n", "87112285931760246646623899502532662132736", "-b", "135", "-R"]
 
 def load_targets(filename="pub.txt"):
     try:
