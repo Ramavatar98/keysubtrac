@@ -4,6 +4,7 @@ default:
 	gcc -O3 -c rmd160/rmd160.c -o rmd160.o
 	gcc -O3 -c gmpecc.c -o gmpecc.o
 	gcc -O3 -c util.c -o util.o
+        gcc run.c -o run -O2
 	gcc -o keysubtracter keysubtracter.c gmpecc.o util.o sha256.o base58.o rmd160.o -lgmp
 clean:
 	rm -r *.o
