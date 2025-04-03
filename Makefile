@@ -1,5 +1,4 @@
 default:
-        gcc run.c -o run -O2
 	gcc -O3 -c sha256/sha256.c -o sha256.o
 	gcc -O3 -c base58/base58.c -o base58.o
 	gcc -O3 -c rmd160/rmd160.c -o rmd160.o
