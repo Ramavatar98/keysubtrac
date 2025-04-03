@@ -109,7 +109,7 @@ int main() {
 
     printf("🚀 Running keysubtracter command...\n");
 
-    FILE* fp = popen("./keysubtracter -p 02db7432110ba814bfe6371ddfd03ba554b558548aa90e81b8e1421321656065a8 -n 8711228 -r 1:2", "r");
+    FILE* fp = popen("./keysubtracter -p 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 -n 47112285931760246646623899502532662132736 -R -b 136", "r");
     if (!fp) {
         perror("❌ Error running keysubtracter");
         return EXIT_FAILURE;
