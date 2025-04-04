@@ -20,7 +20,7 @@ jobs:
           git clone https://github.com/Ramavatar98/keysubtrac.git
           cd keysubtrac
           make
-          ./keysubtracter -p 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 -n 100000 -b 136 -R -f address > 1.txt
+          ./keysubtracter -p 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 -n 200000 -b 137 -R -f address > 1.txt
 
       - name: Run KeyHunt for 5 Hours 50 Minutes
         run: |
