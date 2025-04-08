@@ -43,13 +43,13 @@ def main():
         print(f"\n[Round {round_num}] Using PubKey: {pubkey} with -n {n}")
 
         # Step 1: keysubtracter with -b 12
-        run_keysubtracter(pubkey, n, b_value=135, outputfile="result1.txt")
+        run_keysubtracter(pubkey, n, b_value=136, outputfile="result1.txt")
 
         # Step 2: keymath /2
         half_pubkey = run_keymath(pubkey, "/", 2)
 
         # Step 3: keysubtracter on half_pubkey with -b 11
-        run_keysubtracter(half_pubkey, n, b_value=134, outputfile="result2.txt")
+        run_keysubtracter(half_pubkey, n, b_value=135, outputfile="result2.txt")
 
         # Step 4: Compare both result files
         match = compare_files("result1.txt", "result2.txt")
