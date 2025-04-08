@@ -10,7 +10,7 @@ def get_n_value():
     if os.path.exists(STATE_FILE):
         with open(STATE_FILE, "r") as f:
             state = json.load(f)
-            return state.get("n", 10)
+            return state.get("n", 100000)
     return 10
 
 # Save updated -n value
@@ -32,7 +32,7 @@ def compare_files(file1, file2):
     return set1 & set2
 
 def main():
-    pubkey = "03d04b3f0f5c305ff4d13ecd74db285a96bd773af7de8766b4438a2a51a324de8c"
+    pubkey = "02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16"
     checked = set()
     minus_count = 0
     round_num = 0
@@ -43,13 +43,13 @@ def main():
         print(f"\n[Round {round_num}] Using PubKey: {pubkey} with -n {n}")
 
         # Step 1: keysubtracter with -b 12
-        run_keysubtracter(pubkey, n, b_value=12, outputfile="result1.txt")
+        run_keysubtracter(pubkey, n, b_value=135, outputfile="result1.txt")
 
         # Step 2: keymath /2
         half_pubkey = run_keymath(pubkey, "/", 2)
 
         # Step 3: keysubtracter on half_pubkey with -b 11
-        run_keysubtracter(half_pubkey, n, b_value=11, outputfile="result2.txt")
+        run_keysubtracter(half_pubkey, n, b_value=134, outputfile="result2.txt")
 
         # Step 4: Compare both result files
         match = compare_files("result1.txt", "result2.txt")
