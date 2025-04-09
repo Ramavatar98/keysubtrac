@@ -11,7 +11,7 @@ def get_n_value():
         with open(STATE_FILE, "r") as f:
             state = json.load(f)
             return state.get("n", 100000)
-    return 10000
+    return 15000
 
 # Save updated -n value
 def save_n_value(n):
