@@ -10,8 +10,8 @@ def get_n_value():
     if os.path.exists(STATE_FILE):
         with open(STATE_FILE, "r") as f:
             state = json.load(f)
-            return state.get("n", 100000)
-    return 15000
+            return state.get("n", 15500)
+    return 15500
 
 # Save updated -n value
 def save_n_value(n):
