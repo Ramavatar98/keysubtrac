@@ -1,69 +1,78 @@
 import subprocess
 
-def run_keysubtracter(pubkey, outputfile, b_value):
-    subprocess.run(["./keysubtracter", "-p", pubkey, "-n", "1500", "-x", "-b", str(b_value)], stdout=open(outputfile, "w"))
+def run_keysubtracter(pubkey, outputfile, b_value, n_value):
+    subprocess.run(["./keysubtracter", "-p", pubkey, "-n", str(n_value), "-x", "-b", str(b_value)],
+                   stdout=open(outputfile, "w"))
 
 def run_keymath(pubkey, op, val):
     result = subprocess.check_output(["./keymath", pubkey, op, str(val)])
     return result.decode().strip()
 
-def compare_multiple(*files):
-    sets = []
-    for file in files:
-        with open(file) as f:
-            sets.append(set(f.read().splitlines()))
-    
-    # Check for matches in any 2 or all 3 sets
-    common_matches = (sets[0] & sets[1]) | (sets[1] & sets[2]) | (sets[0] & sets[2])
-    return common_matches
+def compare_files(file1, file2):
+    with open(file1) as f1, open(file2) as f2:
+        set1 = set(f1.read().splitlines())
+        set2 = set(f2.read().splitlines())
+    return set1 & set2
+
+def compare_three(file1, file2, file3):
+    with open(file1) as f1, open(file2) as f2, open(file3) as f3:
+        set1 = set(f1.read().splitlines())
+        set2 = set(f2.read().splitlines())
+        set3 = set(f3.read().splitlines())
+    return (set1 & set2) | (set1 & set3) | (set2 & set3)
 
 def main():
-    pubkey = "03d02b29ecbaaab809da4e34a6740aaa4b2d1242d928c23a8e1782a8d3db47b117"
+    original_pubkey = "036c71938c22a05c769af21a58c45104fef3f44bcc36bef720a88df69e28ed1f7b"
+    pubkey = original_pubkey
     checked = set()
     minus_count = 0
     round_num = 0
+    n_value = 1500
 
     while True:
         round_num += 1
-        print(f"\n[Round {round_num}] PubKey: {pubkey}")
+        print(f"\n[Round {round_num}] Using PubKey: {pubkey} | -n: {n_value}")
 
-        # Step 1: First subtracter run with -b 12
-        run_keysubtracter(pubkey, "result1.txt", b_value=135)
+        run_keysubtracter(pubkey, "result1.txt", b_value=135, n_value=n_value)
 
-        # Step 2: pubkey / 2
-        half1 = run_keymath(pubkey, "/", 2)
+        half_pubkey = run_keymath(pubkey, "/", 2)
+        run_keysubtracter(half_pubkey, "result2.txt", b_value=134, n_value=n_value)
 
-        # Step 3: Second subtracter run with -b 11
-        run_keysubtracter(half1, "result2.txt", b_value=134)
+        quarter_pubkey = run_keymath(half_pubkey, "/", 2)
+        run_keysubtracter(quarter_pubkey, "result3.txt", b_value=133, n_value=n_value)
 
-        # Step 4: half1 / 2
-        half2 = run_keymath(half1, "/", 2)
-
-        # Step 5: Third subtracter run with -b 10
-        run_keysubtracter(half2, "result3.txt", b_value=133)
-
-        # Step 6: Compare all 3 result files
-        match = compare_multiple("result1.txt", "result2.txt", "result3.txt")
+        match = compare_three("result1.txt", "result2.txt", "result3.txt")
         if match:
             print(f"[✓] Match Found after {minus_count} x '-1' operations!")
             with open("match_found.txt", "w") as matchfile:
                 matchfile.write(f"Match found after {minus_count} x '-1'\n")
-                matchfile.write(f"Main pubkey: {pubkey}\n")
-                matchfile.write(f"Half1: {half1}\nHalf2: {half2}\n")
+                matchfile.write(f"Main pubkey used: {pubkey}\n")
+                matchfile.write(f"Half pubkey used: {half_pubkey}\n")
+                matchfile.write(f"Quarter pubkey used: {quarter_pubkey}\n")
                 matchfile.write("Matched lines:\n")
                 matchfile.write("\n".join(match))
             break
 
-        # Step 7: Try next pubkey -1
         new_pubkey = run_keymath(pubkey, "-", 1)
-
         if new_pubkey in checked:
-            print("[x] Already tried. Ending loop.")
+            print("[x] Already tried this pubkey. Ending loop.")
             break
 
         checked.add(pubkey)
         pubkey = new_pubkey
         minus_count += 1
+
+        if minus_count >= 5000:
+            print(f"[i] 500 rounds done. Increasing -n by 10 and restarting from original pubkey.")
+            n_value += 10
+
+            # Save updated -n value
+            with open("np.txt", "a") as np_file:
+                np_file.write(f"{n_value}\n")
+
+            pubkey = original_pubkey
+            minus_count = 0
+            checked.clear()
 
 if __name__ == "__main__":
     main()
