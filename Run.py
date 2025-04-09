@@ -22,7 +22,7 @@ def compare_three(file1, file2, file3):
     return (set1 & set2) | (set1 & set3) | (set2 & set3)
 
 def main():
-    original_pubkey = "036c71938c22a05c769af21a58c45104fef3f44bcc36bef720a88df69e28ed1f7b"
+    original_pubkey = "03d02b29ecbaaab809da4e34a6740aaa4b2d1242d928c23a8e1782a8d3db47b117"
     pubkey = original_pubkey
     checked = set()
     minus_count = 0
