@@ -27,7 +27,7 @@ def main():
     checked = set()
     minus_count = 0
     round_num = 0
-    n_value = 13005020
+    n_value = 9005020
 
     while True:
         round_num += 1
