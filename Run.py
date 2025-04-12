@@ -35,10 +35,10 @@ def main():
 
         run_keysubtracter(pubkey, "result1.txt", b_value=135, n_value=n_value)
 
-        half_pubkey = run_keymath(pubkey, "/", 2)
+        half_pubkey = run_keymath(pubkey, "x", 2)
         run_keysubtracter(half_pubkey, "result2.txt", b_value=134, n_value=n_value)
 
-        quarter_pubkey = run_keymath(half_pubkey, "/", 2)
+        quarter_pubkey = run_keymath(half_pubkey, "x", 2)
         run_keysubtracter(quarter_pubkey, "result3.txt", b_value=133, n_value=n_value)
 
         match = compare_three("result1.txt", "result2.txt", "result3.txt")
