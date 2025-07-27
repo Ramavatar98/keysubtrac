@@ -1,3 +1,19 @@
-import random                                                     import subprocess                                                 
-# Fixed public key                                                public_key = "02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16"                                                                                                                     # Random 40-digit number                                          random_n = ''.join([str(random.randint(0, 9)) for _ in range(40)])                                                                  # Command to execute                                              command = f"./keysubtracter -p {public_key} -f address -x -n {random_n} -b 136 -d"
-                                                                  print(f"Running command with -n: {random_n}")                                                                                       # Open file and execute command                                   with open("1.txt", "w") as outfile:                                   subprocess.run(command.split(), stdout=outfile)                                                                                 print("✅ Done. Output saved to 1.txt")
+import random
+import subprocess
+
+# Fixed public key
+public_key = "02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa32>
+
+# Random 40-digit number
+random_n = ''.join([str(random.randint(0, 9)) for _ in range(40)])
+
+# Command to execute
+command = f"./keysubtracter -p {public_key} -f address -x -n {ran>
+
+print(f"Running command with -n: {random_n}")
+
+# Open file and execute command
+with open("1.txt", "w") as outfile:
+    subprocess.run(command.split(), stdout=outfile)
+
+print("✅ Done. Output saved to 1.txt")
