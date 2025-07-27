@@ -1,6 +1,7 @@
 /*
 Developed by Luis Alberto
 email: alberto.bsd@gmail.com
+MODIFIED by Gemini to include descending sequential mode and fix compiler warnings.
 */
 
 
@@ -21,7 +22,7 @@ email: alberto.bsd@gmail.com
 #include "sha256/sha256.h"
 
 
-const char *version = "0.1.20210918";
+const char *version = "0.1.20210918-mod-desc-v2"; // Version updated
 const char *EC_constant_N = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141";
 const char *EC_constant_P = "fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f";
 const char *EC_constant_Gx = "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798";
@@ -57,6 +58,7 @@ int FLAG_FORMART = 0;
 int FLAG_HIDECOMMENT = 0;
 int FLAG_LOOK = 0;
 int FLAG_MODE = 0;
+int FLAG_DESCENDING = 0;
 int FLAG_N;
 uint64_t N = 0,M;
 
@@ -65,7 +67,7 @@ gmp_randstate_t state;
 
 int main(int argc, char **argv)  {
 	FILE *OUTPUT;
-	char c;
+	int c; // FIXED: Changed type from char to int
 	uint64_t i = 0;
 	mpz_init_set_str(EC.p, EC_constant_P, 16);
 	mpz_init_set_str(EC.n, EC_constant_N, 16);
@@ -79,7 +81,7 @@ int main(int argc, char **argv)  {
 	mpz_init_set_ui(TWO,2);
 	mpz_init(target_publickey.x);
 	mpz_init_set_ui(target_publickey.y,0);
-	while ((c = getopt(argc, argv, "hvxRb:n:o:p:r:f:l:")) != -1) {
+	while ((c = getopt(argc, argv, "hvxRdb:n:o:p:r:f:l:")) != -1) {
 		switch(c) {
 			case 'x':
 				FLAG_HIDECOMMENT = 1;
@@ -88,6 +90,9 @@ int main(int argc, char **argv)  {
 				showhelp();
 				exit(0);
 			break;
+            case 'd':
+                FLAG_DESCENDING = 1;
+            break;
 			case 'b':
 				set_bit((char *)optarg);
 				FLAG_BIT = 1;
@@ -163,13 +168,13 @@ int main(int argc, char **argv)  {
 				Point_Addition(&base_publickey,&target_publickey,&dst_publickey);
 				
 				switch(FLAG_FORMART)	{
-					case 0: //Publickey
+					case 0:
 						generate_strpublickey(&dst_publickey,FLAG_LOOK == 0,str_publickey);
 						if(FLAG_HIDECOMMENT)	{
 							fprintf(OUTPUT,"%s\n",str_publickey);
 						}
 						else	{
-							//gmp_fprintf(OUTPUT,"%s # - %Zd\n",str_publickey,base_key);
+							gmp_fprintf(OUTPUT,"%s # - %Zd\n",str_publickey,base_key);
 						}
 						
 						Point_Addition(&negated_publickey,&target_publickey,&dst_publickey);
@@ -181,7 +186,7 @@ int main(int argc, char **argv)  {
 							gmp_fprintf(OUTPUT,"%s # + %Zd\n",str_publickey,base_key);
 						}
 					break;
-					case 1: //rmd160
+					case 1:
 						generate_strrmd160(&dst_publickey,FLAG_LOOK == 0,str_rmd160);
 						if(FLAG_HIDECOMMENT)	{
 							fprintf(OUTPUT,"%s\n",str_rmd160);
@@ -198,13 +203,13 @@ int main(int argc, char **argv)  {
 							gmp_fprintf(OUTPUT,"%s # + %Zd\n",str_rmd160,base_key);
 						}
 					break;
-					case 2:	//address
+					case 2:
 						generate_straddress(&dst_publickey,FLAG_LOOK == 0,str_address);
 						if(FLAG_HIDECOMMENT)	{
 							fprintf(OUTPUT,"%s\n",str_address);
 						}
 						else	{
-							//gmp_fprintf(OUTPUT,"%s # - %Zd\n",str_address,base_key);
+							gmp_fprintf(OUTPUT,"%s # - %Zd\n",str_address,base_key);
 						}
 						Point_Addition(&negated_publickey,&target_publickey,&dst_publickey);
 						generate_straddress(&dst_publickey,FLAG_LOOK == 0,str_address);
@@ -212,57 +217,40 @@ int main(int argc, char **argv)  {
 							fprintf(OUTPUT,"%s\n",str_address);
 						}
 						else	{
-							gmp_fprintf(OUTPUT,"%s\n # + %Zd\n",str_address,base_key);
+							gmp_fprintf(OUTPUT,"%s # + %Zd\n",str_address,base_key);
 						}
 					break;
 				}
 			}
-			
-			switch(FLAG_FORMART)	{
-				case 0: //Publickey
-					generate_strpublickey(&target_publickey,FLAG_LOOK == 0,str_publickey);
-					if(FLAG_HIDECOMMENT)	{
-						fprintf(OUTPUT,"%s\n",str_publickey);
-					}
-					else	{
-						fprintf(OUTPUT,"%s # target\n",str_publickey);
-					}
-				break;
-				case 1: //rmd160
-					generate_strrmd160(&target_publickey,FLAG_LOOK == 0,str_rmd160);
-					if(FLAG_HIDECOMMENT)	{
-						fprintf(OUTPUT,"%s\n",str_rmd160);
-					}
-					else	{
-						fprintf(OUTPUT,"%s # target\n",str_rmd160);
-					}
-				break;
-				case 2:	//address
-					generate_straddress(&target_publickey,FLAG_LOOK == 0,str_address);
-					if(FLAG_HIDECOMMENT)	{
-						fprintf(OUTPUT,"%s\n",str_address);
-					}
-					else	{
-						fprintf(OUTPUT,"%s # target\n",str_address);
-					}
-				break;
-			}
 		}
 		else	{
-			mpz_cdiv_q_ui(base_key,diff,M);
+            struct Point step_point;
+            mpz_init(step_point.x);
+            mpz_init(step_point.y);
+
+			mpz_cdiv_q_ui(base_key,diff,M); 
 			Scalar_Multiplication(G,&base_publickey,base_key);
-			mpz_set(sum_publickey.x,base_publickey.x);
-			mpz_set(sum_publickey.y,base_publickey.y);
-			mpz_set(sum_key,base_key);
+
+            if(FLAG_DESCENDING) {
+                mpz_set(sum_key, max_range);
+                Point_Negation(&base_publickey, &step_point);
+            } else {
+                mpz_set(sum_key, base_key);
+                mpz_set(step_point.x, base_publickey.x);
+                mpz_set(step_point.y, base_publickey.y);
+            }
+            
+            Scalar_Multiplication(G, &sum_publickey, sum_key);
+
 			for(i = 0; i < M;i++)	{
 				Point_Negation(&sum_publickey,&negated_publickey);
 				Point_Addition(&sum_publickey,&target_publickey,&dst_publickey);
 				
 				switch(FLAG_FORMART)	{
-					case 0: //Publickey
+					case 0:
 						generate_strpublickey(&dst_publickey,FLAG_LOOK == 0,str_publickey);
 						if(FLAG_HIDECOMMENT)	{
-							fprintf(OUTPUT,"%s\n",str_publickey);
+							//fprintf(OUTPUT,"%s\n",str_publickey);
 						}
 						else	{
 							gmp_fprintf(OUTPUT,"%s # - %Zd\n",str_publickey,sum_key);
@@ -276,7 +264,7 @@ int main(int argc, char **argv)  {
 							gmp_fprintf(OUTPUT,"%s # + %Zd\n",str_publickey,sum_key);
 						}
 					break;
-					case 1: //rmd160
+					case 1:
 						generate_strrmd160(&dst_publickey,FLAG_LOOK == 0,str_rmd160);
 						if(FLAG_HIDECOMMENT)	{
 							fprintf(OUTPUT,"%s\n",str_rmd160);
@@ -293,7 +281,7 @@ int main(int argc, char **argv)  {
 							gmp_fprintf(OUTPUT,"%s # + %Zd\n",str_rmd160,sum_key);
 						}
 					break;
-					case 2:	//address
+					case 2:
 						generate_straddress(&dst_publickey,FLAG_LOOK == 0,str_address);
 						if(FLAG_HIDECOMMENT)	{
 							fprintf(OUTPUT,"%s\n",str_address);
@@ -312,43 +300,50 @@ int main(int argc, char **argv)  {
 					break;
 				}
 				
-				Point_Addition(&sum_publickey,&base_publickey,&dst_publickey);
-				mpz_set(sum_publickey.x,dst_publickey.x);
-				mpz_set(sum_publickey.y,dst_publickey.y);
-				mpz_add(sum_key,sum_key,base_key);
+                Point_Addition(&sum_publickey, &step_point, &dst_publickey);
+                mpz_set(sum_publickey.x, dst_publickey.x);
+                mpz_set(sum_publickey.y, dst_publickey.y);
+
+                if(FLAG_DESCENDING) {
+                    mpz_sub(sum_key, sum_key, base_key);
+                } else {
+                    mpz_add(sum_key, sum_key, base_key);
+                }
 			}
-			
-			switch(FLAG_FORMART)	{
-				case 0: //Publickey
-					generate_strpublickey(&target_publickey,FLAG_LOOK == 0,str_publickey);
-					if(FLAG_HIDECOMMENT)	{
-						fprintf(OUTPUT,"%s\n",str_publickey);
-					}
-					else	{
-						fprintf(OUTPUT,"%s # target\n",str_publickey);
-					}
-				break;
-				case 1: //rmd160
-					generate_strrmd160(&target_publickey,FLAG_LOOK == 0,str_rmd160);
-					if(FLAG_HIDECOMMENT)	{
-						fprintf(OUTPUT,"%s\n",str_rmd160);
-					}
-					else	{
-						fprintf(OUTPUT,"%s # target\n",str_rmd160);
-					}
-				break;
-				case 2:	//address
-					generate_straddress(&target_publickey,FLAG_LOOK == 0,str_address);
-					if(FLAG_HIDECOMMENT)	{
-						fprintf(OUTPUT,"%s\n",str_address);
-					}
-					else	{
-						fprintf(OUTPUT,"%s # target\n",str_address);
-					}
-				break;
-			}
+            mpz_clear(step_point.x);
+            mpz_clear(step_point.y);
 		}
 		
+		switch(FLAG_FORMART)	{
+			case 0:
+				generate_strpublickey(&target_publickey,FLAG_LOOK == 0,str_publickey);
+				if(FLAG_HIDECOMMENT)	{
+					fprintf(OUTPUT,"%s\n",str_publickey);
+				}
+				else	{
+					fprintf(OUTPUT,"%s # target\n",str_publickey);
+				}
+			break;
+			case 1:
+				generate_strrmd160(&target_publickey,FLAG_LOOK == 0,str_rmd160);
+				if(FLAG_HIDECOMMENT)	{
+					fprintf(OUTPUT,"%s\n",str_rmd160);
+				}
+				else	{
+					fprintf(OUTPUT,"%s # target\n",str_rmd160);
+				}
+			break;
+			case 2:
+				generate_straddress(&target_publickey,FLAG_LOOK == 0,str_address);
+				if(FLAG_HIDECOMMENT)	{
+					fprintf(OUTPUT,"%s\n",str_address);
+				}
+				else	{
+					fprintf(OUTPUT,"%s # target\n",str_address);
+				}
+			break;
+		}
+
 		mpz_clear(base_publickey.x);
 		mpz_clear(base_publickey.y);
 		mpz_clear(sum_publickey.x);
@@ -371,6 +366,7 @@ int main(int argc, char **argv)  {
 void showhelp()	{
 	printf("\nUsage:\n-h\t\tshow this help\n");
 	printf("-b bits\t\tFor some puzzles you only need a bit range\n");
+    printf("-d\t\tUse descending order for sequential mode (e.g., 1000, 900, 800...)\n");
 	printf("-f format\tOutput format <publickey, rmd160, address>. Default: publickey\n");
 	printf("-l look\t\tOutput <compress, uncompress>. Default: compress\n");
 	printf("-n number\tNumber of publikeys to be geneted, this numbe will be even\n");
@@ -512,7 +508,7 @@ void set_look(char *param)	{
 void generate_strpublickey(struct Point *publickey,bool compress,char *dst)	{
 	memset(dst,0,132);
 	if(compress)	{
-		if(mpz_tstbit(publickey->y, 0) == 0)	{	// Even
+		if(mpz_tstbit(publickey->y, 0) == 0)	{
 			gmp_snprintf (dst,67,"02%0.64Zx",publickey->x);
 		}
 		else	{
@@ -526,12 +522,13 @@ void generate_strpublickey(struct Point *publickey,bool compress,char *dst)	{
 
 void generate_strrmd160(struct Point *publickey,bool compress,char *dst)	{
 	char str_publickey[131];
-	char bin_publickey[65];
-	char bin_sha256[32];
-	char bin_rmd160[20];
+	// FIXED: Changed type to unsigned char
+	unsigned char bin_publickey[65];
+	unsigned char bin_sha256[32];
+	unsigned char bin_rmd160[20];
 	memset(dst,0,42);
 	if(compress)	{
-		if(mpz_tstbit(publickey->y, 0) == 0)	{	// Even
+		if(mpz_tstbit(publickey->y, 0) == 0)	{
 			gmp_snprintf (str_publickey,67,"02%0.64Zx",publickey->x);
 		}
 		else	{
@@ -545,19 +542,20 @@ void generate_strrmd160(struct Point *publickey,bool compress,char *dst)	{
 		hexs2bin(str_publickey,bin_publickey);
 		sha256(bin_publickey, 65, bin_sha256);
 	}
-	RMD160Data((const unsigned char*)bin_sha256,32, bin_rmd160);
-	tohex_dst(bin_rmd160,20,dst);
+	RMD160Data((const unsigned char*)bin_sha256,32, (char*)bin_rmd160);
+	tohex_dst((char*)bin_rmd160,20,dst);
 }
 
 void generate_straddress(struct Point *publickey,bool compress,char *dst)	{
 	char str_publickey[131];
-	char bin_publickey[65];
-	char bin_sha256[32];
-	char bin_digest[60];
+    // FIXED: Changed type to unsigned char
+	unsigned char bin_publickey[65];
+	unsigned char bin_sha256[32];
+	unsigned char bin_digest[60];
 	size_t pubaddress_size = 42;
 	memset(dst,0,42);
 	if(compress)	{
-		if(mpz_tstbit(publickey->y, 0) == 0)	{	// Even
+		if(mpz_tstbit(publickey->y, 0) == 0)	{
 			gmp_snprintf (str_publickey,67,"02%0.64Zx",publickey->x);
 		}
 		else	{
@@ -571,17 +569,13 @@ void generate_straddress(struct Point *publickey,bool compress,char *dst)	{
 		hexs2bin(str_publickey,bin_publickey);
 		sha256(bin_publickey, 65, bin_sha256);
 	}
-	RMD160Data((const unsigned char*)bin_sha256,32, bin_digest+1);
-	
-	/* Firts byte 0, this is for the Address begining with 1.... */
+	RMD160Data((const unsigned char*)bin_sha256,32, (char*)bin_digest+1);
 	
 	bin_digest[0] = 0;
 	
-	/* Double sha256 checksum */	
 	sha256(bin_digest, 21, bin_digest+21);
 	sha256(bin_digest+21, 32, bin_digest+21);
 	
-	/* Get the address */
 	if(!b58enc(dst,&pubaddress_size,bin_digest,25)){
 		fprintf(stderr,"error b58enc\n");
 	}
