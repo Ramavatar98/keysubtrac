@@ -9,7 +9,7 @@ command = [
     "./keysubtracter",
     "-p", public_key,
     "-n", random_n,
-    "-b", "136",
+    "-b", "137",
     "-d",
     "-x",
     "-f", "address"
